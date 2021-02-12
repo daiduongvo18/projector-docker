@@ -92,6 +92,31 @@ RUN true \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt
 
+RUN true \
+# Any command which returns non-zero exit code will cause this shell script to exit immediately:
+    && set -e \
+# Activate debugging to show execution details: all commands will be printed before execution
+    && set -x \
+# install docker packages:
+    && apt-get update \
+    && apt-get install -y \
+    	apt-transport-https \
+    	ca-certificates \
+    	curl \
+    	gnupg-agent \
+    	software-properties-common \
+    && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
+    && add-apt-repository \
+   		"deb [arch=amd64] https://download.docker.com/linux/debian \
+   		$(lsb_release -cs) \
+   		stable" \
+   	&& apt-get update \ 
+   	&& apt-get install -y docker-ce-cli \
+   	&& curl -L "https://github.com/docker/compose/releases/download/1.28.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose \
+# clean apt to reduce image size:
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt
+
 # copy the Projector dir:
 ENV PROJECTOR_DIR /projector
 COPY --from=projectorStaticFiles $PROJECTOR_DIR $PROJECTOR_DIR
