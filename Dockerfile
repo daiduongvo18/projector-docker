@@ -92,30 +92,43 @@ RUN true \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt
 
+# Configure Node.js version
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash
+
 RUN true \
 # Any command which returns non-zero exit code will cause this shell script to exit immediately:
     && set -e \
 # Activate debugging to show execution details: all commands will be printed before execution
     && set -x \
-# install docker packages:
+# Install docker packages:
     && apt-get update \
     && apt-get install -y \
-    	apt-transport-https \
-    	ca-certificates \
-    	curl \
-    	gnupg-agent \
-    	software-properties-common \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg-agent \
+        software-properties-common \
+        nodejs \
+        npm \
     && curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add - \
     && add-apt-repository \
-   		"deb [arch=amd64] https://download.docker.com/linux/debian \
-   		$(lsb_release -cs) \
-   		stable" \
-   	&& apt-get update \ 
-   	&& apt-get install -y docker-ce-cli \
-   	&& curl -L "https://github.com/docker/compose/releases/download/1.28.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose \
+        "deb [arch=amd64] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) \
+        stable" \
+    && apt-get update \ 
+    && apt-get install -y docker-ce-cli \
+    && curl -L "https://github.com/docker/compose/releases/download/1.28.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose \
+# Install php packages
+    && curl -o /etc/apt/trusted.gpg.d/php.gpg -L https://packages.sury.org/php/apt.gpg \
+    && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" | tee /etc/apt/sources.list.d/php.list \
+    && apt-get update \
+    && apt-get install -y php7.4-cli php7.4-common php7.4-bcmath php7.4-gd php7.4-intl php7.4-mysql php7.4-soap php7.4-xsl php7.4-zip php7.4-mbstring php7.4-curl \
 # clean apt to reduce image size:
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/apt
+
+# Install Grunt
+RUN npm install -g grunt-cli
 
 # copy the Projector dir:
 ENV PROJECTOR_DIR /projector
